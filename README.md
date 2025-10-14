@@ -1,8 +1,16 @@
+Предварительные действия
+
+```
+sudo apt install python3-venv
+python3 -m venv venv
+```
+
 1. Бэкенд:
 ```
 cd backend
+source venv/bin/activate
 pip install -r requirements.txt
-python main.py
+python main.py &
 ```
 2. Фронтенд
 ```
