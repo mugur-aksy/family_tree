@@ -1,24 +1,25 @@
 import React from 'react';
+import './FamilyTree.css';
 
-const TreeNode = ({ person }) => {
+const TreeNode = ({ person, level = 0 }) => {
   return (
-    <div style={{
-      margin: '10px',
-      padding: '10px',
-      border: '1px solid #333',
-      display: 'inline-block',
-      textAlign: 'center'
-    }}>
-      <div><strong>{person.first_name} {person.last_name}</strong></div>
-      {person.birth_date && <div>Род.: {person.birth_date}</div>}
+    <div className={`tree-node level-${level}`}>
+      <div className="person-card">
+        <div className="person-name">
+          {person.first_name} {person.last_name}
+        </div>
+        {person.birth_date && (
+          <div className="person-birth">
+            🎂 {new Date(person.birth_date).toLocaleDateString('ru-RU')}
+          </div>
+        )}
+        <div className="person-id">ID: {person.id}</div>
+      </div>
+
       {person.children && person.children.length > 0 && (
-        <div style={{
-          display: 'flex',
-          justifyContent: 'center',
-          marginTop: '20px'
-        }}>
+        <div className="children-container">
           {person.children.map(child => (
-            <TreeNode key={child.id} person={child} />
+            <TreeNode key={child.id} person={child} level={level + 1} />
           ))}
         </div>
       )}
@@ -28,15 +29,22 @@ const TreeNode = ({ person }) => {
 
 const FamilyTree = ({ treeData }) => {
   if (!treeData || treeData.length === 0) {
-    return <div>Дерево пустое. Добавьте родственников!</div>;
+    return (
+      <div className="empty-tree">
+        <h3>Дерево пока пустое 🌱</h3>
+        <p>Добавьте первого родственника чтобы начать строить дерево!</p>
+      </div>
+    );
   }
 
   return (
-    <div style={{ padding: '20px' }}>
-      <h2>Родовое дерево</h2>
-      {treeData.map(person => (
-        <TreeNode key={person.id} person={person} />
-      ))}
+    <div className="family-tree">
+      <h2>🌳 Структура семьи</h2>
+      <div className="tree-container">
+        {treeData.map(person => (
+          <TreeNode key={person.id} person={person} />
+        ))}
+      </div>
     </div>
   );
 };
