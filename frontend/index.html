@@ -3,27 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Родовое дерево</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Семейное древо | Родословная</title>
+    <meta name="description" content="Создайте и управляйте своим семейным древом">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌳</text></svg>">
+    <link rel="stylesheet" href="style.css?v=2">
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>🌳 Мое родовое дерево</h1>
+            <h1>Семейное древо</h1>
+            <p>Сохраните историю вашей семьи для будущих поколений</p>
         </header>
 
         <main>
             <section class="form-section">
-                <h2>➕ Добавить родственника</h2>
+                <h2>Добавить родственника</h2>
                 <form id="personForm">
                     <div class="form-group">
                         <label for="firstName">Имя *</label>
-                        <input type="text" id="firstName" name="first_name" required>
+                        <input type="text" id="firstName" name="first_name" placeholder="Введите имя" required>
                     </div>
 
                     <div class="form-group">
                         <label for="lastName">Фамилия *</label>
-                        <input type="text" id="lastName" name="last_name" required>
+                        <input type="text" id="lastName" name="last_name" placeholder="Введите фамилию" required>
                     </div>
 
                     <div class="form-group">
@@ -38,20 +41,20 @@
                         </select>
                     </div>
 
-                    <button type="submit" id="submitBtn">Добавить в дерево</button>
+                    <button type="submit" id="submitBtn">Добавить в древо</button>
                 </form>
                 <div id="messageContainer"></div>
             </section>
 
             <section class="tree-section">
-                <h2>🌳 Структура семьи</h2>
+                <h2>Структура семьи</h2>
                 <div id="treeContainer" class="tree-container">
-                    <div class="loading">Загрузка дерева...</div>
+                    <div class="loading">Загрузка древа...</div>
                 </div>
             </section>
         </main>
     </div>
 
-    <script src="app.js"></script>
+    <script src="app.js?v=2"></script>
 </body>
 </html>
