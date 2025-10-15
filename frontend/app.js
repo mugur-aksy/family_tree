@@ -1,4 +1,4 @@
-const API_BASE_URL = 'http://89.169.137.78:8000';  // Используем ваш IP
+const API_BASE_URL = 'http://localhost:8000';
 
 class FamilyTreeApp {
     constructor() {
@@ -6,24 +6,46 @@ class FamilyTreeApp {
         this.init();
     }
 
+    async init() {
+        console.log('Initializing Family Tree App...');
+        this.setupEventListeners();
+        await this.loadPersons();
+        await this.loadTree();
+    }
+
+    setupEventListeners() {
+        const form = document.getElementById('personForm');
+        // Убираем стандартное поведение формы
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            this.handleSubmit(e);
+        });
+    }
+
     async apiCall(endpoint, options = {}) {
         try {
-            console.log(`Making API call to: ${API_BASE_URL}${endpoint}`);
+            console.log(`Making API call to: ${API_BASE_URL}${endpoint}`, options);
 
-            const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+            const config = {
                 headers: {
                     'Content-Type': 'application/json',
                     ...options.headers
                 },
                 ...options
-            });
+            };
+
+            if (options.body) {
+                config.body = JSON.stringify(options.body);
+            }
+
+            const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
 
             console.log('Response status:', response.status);
 
             if (!response.ok) {
                 const errorText = await response.text();
                 console.error('API error response:', errorText);
-                throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+                throw new Error(`HTTP error! status: ${response.status}`);
             }
 
             const data = await response.json();
@@ -63,9 +85,6 @@ class FamilyTreeApp {
 
     updateParentSelect() {
         const select = document.getElementById('parentId');
-        // Сохраняем текущее значение
-        const currentValue = select.value;
-
         select.innerHTML = '<option value="">-- Выберите родителя --</option>';
 
         this.persons.forEach(person => {
@@ -74,11 +93,6 @@ class FamilyTreeApp {
             option.textContent = `${person.first_name} ${person.last_name} (ID: ${person.id})`;
             select.appendChild(option);
         });
-
-        // Восстанавливаем выбранное значение, если оно все еще существует
-        if (currentValue && this.persons.some(p => p.id == currentValue)) {
-            select.value = currentValue;
-        }
     }
 
     renderTree(treeData) {
@@ -123,13 +137,8 @@ class FamilyTreeApp {
         return div.innerHTML;
     }
 
-    setupEventListeners() {
-        const form = document.getElementById('personForm');
-        form.addEventListener('submit', (e) => this.handleSubmit(e));
-    }
-
     async handleSubmit(event) {
-        event.preventDefault();
+        console.log('Form submitted');
 
         const submitBtn = document.getElementById('submitBtn');
         const originalText = submitBtn.textContent;
@@ -138,6 +147,7 @@ class FamilyTreeApp {
             submitBtn.disabled = true;
             submitBtn.textContent = 'Добавление...';
 
+            // Получаем данные формы
             const formData = new FormData(event.target);
             const parentId = formData.get('parent_id');
 
@@ -150,12 +160,15 @@ class FamilyTreeApp {
 
             console.log('Submitting person data:', personData);
 
+            // Отправляем POST запрос к API
             await this.apiCall('/persons/', {
                 method: 'POST',
-                body: JSON.stringify(personData)
+                body: personData
             });
 
             this.showSuccess('Родственник успешно добавлен!');
+
+            // Очищаем форму
             event.target.reset();
 
             // Обновляем данные
@@ -180,17 +193,14 @@ class FamilyTreeApp {
     }
 
     showMessage(message, type) {
-        // Удаляем существующие сообщения
-        const existingMessages = document.querySelectorAll('.message');
-        existingMessages.forEach(msg => msg.remove());
+        const messageContainer = document.getElementById('messageContainer');
+        messageContainer.innerHTML = '';
 
         const messageDiv = document.createElement('div');
         messageDiv.className = `message ${type}`;
         messageDiv.textContent = message;
 
-        // Вставляем перед формой
-        const formSection = document.querySelector('.form-section');
-        formSection.insertBefore(messageDiv, formSection.firstChild);
+        messageContainer.appendChild(messageDiv);
 
         // Автоматически удаляем через 5 секунд
         setTimeout(() => {
@@ -215,6 +225,5 @@ class FamilyTreeApp {
 
 // Инициализация приложения когда DOM загружен
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('Initializing Family Tree App...');
     window.familyTreeApp = new FamilyTreeApp();
 });
