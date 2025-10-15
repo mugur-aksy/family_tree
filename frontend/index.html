@@ -1,12 +1,56 @@
 <!DOCTYPE html>
 <html lang="ru">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Родовое дерево</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.js"></script>
-  </body>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🌳 Мое родовое дерево</h1>
+        </header>
+
+        <main>
+            <section class="form-section">
+                <h2>➕ Добавить родственника</h2>
+                <form id="personForm">
+                    <div class="form-group">
+                        <label for="firstName">Имя *</label>
+                        <input type="text" id="firstName" name="first_name" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="lastName">Фамилия *</label>
+                        <input type="text" id="lastName" name="last_name" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="birthDate">Дата рождения</label>
+                        <input type="date" id="birthDate" name="birth_date">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="parentId">Родитель</label>
+                        <select id="parentId" name="parent_id">
+                            <option value="">-- Выберите родителя --</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" id="submitBtn">Добавить в дерево</button>
+                </form>
+            </section>
+
+            <section class="tree-section">
+                <h2>🌳 Структура семьи</h2>
+                <div id="treeContainer" class="tree-container">
+                    <div class="loading">Загрузка дерева...</div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="app.js"></script>
+</body>
 </html>
