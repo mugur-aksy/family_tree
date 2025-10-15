@@ -4,10 +4,12 @@ from typing import List
 import models
 import database
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 
 app = FastAPI(title="Family Tree API")
 
-# CORS middleware для фронтенда
+# CORS middleware
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -18,6 +20,10 @@ app.add_middleware(
 
 # Создание таблиц при запуске
 models.Base.metadata.create_all(bind=database.engine)
+
+@app.get("/")
+def read_root():
+    return {"message": "Family Tree API is running", "status": "ok"}
 
 @app.post("/persons/", response_model=models.Person)
 def create_person(person: models.PersonCreate, db: Session = Depends(database.get_db)):

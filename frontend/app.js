@@ -1,10 +1,4 @@
-// Автоматическое определение базового URL для API
-const getApiBaseUrl = () => {
-    // Если мы на том же домене, используем относительный путь /api
-    return '/api';
-};
-
-const API_BASE_URL = getApiBaseUrl();
+const API_BASE_URL = 'http://89.169.137.78:8000';  // Используем ваш IP
 
 class FamilyTreeApp {
     constructor() {
@@ -14,10 +8,9 @@ class FamilyTreeApp {
 
     async apiCall(endpoint, options = {}) {
         try {
-            const url = `${API_BASE_URL}${endpoint}`;
-            console.log('Making API call to:', url);
+            console.log(`Making API call to: ${API_BASE_URL}${endpoint}`);
 
-            const response = await fetch(url, {
+            const response = await fetch(`${API_BASE_URL}${endpoint}`, {
                 headers: {
                     'Content-Type': 'application/json',
                     ...options.headers
@@ -25,12 +18,18 @@ class FamilyTreeApp {
                 ...options
             });
 
+            console.log('Response status:', response.status);
+
             if (!response.ok) {
                 const errorText = await response.text();
+                console.error('API error response:', errorText);
                 throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
             }
 
-            return await response.json();
+            const data = await response.json();
+            console.log('API response data:', data);
+            return data;
+
         } catch (error) {
             console.error('API call failed:', error);
             this.showError(`Ошибка соединения с сервером: ${error.message}`);
@@ -38,19 +37,23 @@ class FamilyTreeApp {
         }
     }
 
-    // Остальные методы остаются без изменений...
     async loadPersons() {
         try {
+            console.log('Loading persons...');
             this.persons = await this.apiCall('/persons/');
+            console.log('Loaded persons:', this.persons);
             this.updateParentSelect();
         } catch (error) {
             console.error('Failed to load persons:', error);
+            this.showError('Не удалось загрузить список людей');
         }
     }
 
     async loadTree() {
         try {
+            console.log('Loading tree...');
             const treeData = await this.apiCall('/tree/');
+            console.log('Loaded tree:', treeData);
             this.renderTree(treeData);
         } catch (error) {
             console.error('Failed to load tree:', error);
@@ -60,6 +63,9 @@ class FamilyTreeApp {
 
     updateParentSelect() {
         const select = document.getElementById('parentId');
+        // Сохраняем текущее значение
+        const currentValue = select.value;
+
         select.innerHTML = '<option value="">-- Выберите родителя --</option>';
 
         this.persons.forEach(person => {
@@ -68,6 +74,11 @@ class FamilyTreeApp {
             option.textContent = `${person.first_name} ${person.last_name} (ID: ${person.id})`;
             select.appendChild(option);
         });
+
+        // Восстанавливаем выбранное значение, если оно все еще существует
+        if (currentValue && this.persons.some(p => p.id == currentValue)) {
+            select.value = currentValue;
+        }
     }
 
     renderTree(treeData) {
@@ -91,16 +102,25 @@ class FamilyTreeApp {
             ? `<div class="children-container">${person.children.map(child => this.renderTreeNode(child, level + 1)).join('')}</div>`
             : '';
 
+        const birthDate = person.birth_date ?
+            new Date(person.birth_date + 'T00:00:00').toLocaleDateString('ru-RU') : '';
+
         return `
             <div class="tree-node level-${level}">
                 <div class="person-card">
-                    <div class="person-name">${person.first_name} ${person.last_name}</div>
-                    ${person.birth_date ? `<div class="person-birth">🎂 ${new Date(person.birth_date).toLocaleDateString('ru-RU')}</div>` : ''}
+                    <div class="person-name">${this.escapeHtml(person.first_name)} ${this.escapeHtml(person.last_name)}</div>
+                    ${person.birth_date ? `<div class="person-birth">🎂 ${birthDate}</div>` : ''}
                     <div class="person-id">ID: ${person.id}</div>
                 </div>
                 ${childrenHTML}
             </div>
         `;
+    }
+
+    escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
     }
 
     setupEventListeners() {
@@ -119,12 +139,16 @@ class FamilyTreeApp {
             submitBtn.textContent = 'Добавление...';
 
             const formData = new FormData(event.target);
+            const parentId = formData.get('parent_id');
+
             const personData = {
                 first_name: formData.get('first_name'),
                 last_name: formData.get('last_name'),
-                birth_date: formData.get('birth_date'),
-                parent_id: formData.get('parent_id') || null
+                birth_date: formData.get('birth_date') || null,
+                parent_id: parentId ? parseInt(parentId) : null
             };
+
+            console.log('Submitting person data:', personData);
 
             await this.apiCall('/persons/', {
                 method: 'POST',
@@ -134,12 +158,13 @@ class FamilyTreeApp {
             this.showSuccess('Родственник успешно добавлен!');
             event.target.reset();
 
+            // Обновляем данные
             await this.loadPersons();
             await this.loadTree();
 
         } catch (error) {
             console.error('Failed to create person:', error);
-            this.showError('Ошибка при добавлении родственника');
+            this.showError('Ошибка при добавлении родственника. Проверьте консоль для подробностей.');
         } finally {
             submitBtn.disabled = false;
             submitBtn.textContent = originalText;
@@ -155,6 +180,7 @@ class FamilyTreeApp {
     }
 
     showMessage(message, type) {
+        // Удаляем существующие сообщения
         const existingMessages = document.querySelectorAll('.message');
         existingMessages.forEach(msg => msg.remove());
 
@@ -162,11 +188,15 @@ class FamilyTreeApp {
         messageDiv.className = `message ${type}`;
         messageDiv.textContent = message;
 
-        const form = document.getElementById('personForm');
-        form.parentNode.insertBefore(messageDiv, form);
+        // Вставляем перед формой
+        const formSection = document.querySelector('.form-section');
+        formSection.insertBefore(messageDiv, formSection.firstChild);
 
+        // Автоматически удаляем через 5 секунд
         setTimeout(() => {
-            messageDiv.remove();
+            if (messageDiv.parentNode) {
+                messageDiv.remove();
+            }
         }, 5000);
     }
 
@@ -174,12 +204,17 @@ class FamilyTreeApp {
         const container = document.getElementById('treeContainer');
         container.innerHTML = `
             <div class="error">
-                Не удалось загрузить дерево. Проверьте, запущен ли бэкенд.
+                Не удалось загрузить дерево. Проверьте:<br>
+                1. Запущен ли бэкенд на порту 8000<br>
+                2. Открыт ли порт 8000 в firewall<br>
+                3. Логи бэкенда на наличие ошибок
             </div>
         `;
     }
 }
 
+// Инициализация приложения когда DOM загружен
 document.addEventListener('DOMContentLoaded', () => {
-    new FamilyTreeApp();
+    console.log('Initializing Family Tree App...');
+    window.familyTreeApp = new FamilyTreeApp();
 });
