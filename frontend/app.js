@@ -1,4 +1,10 @@
-const API_BASE_URL = 'http://localhost:8000';
+// Автоматическое определение базового URL для API
+const getApiBaseUrl = () => {
+    // Если мы на том же домене, используем относительный путь /api
+    return '/api';
+};
+
+const API_BASE_URL = getApiBaseUrl();
 
 class FamilyTreeApp {
     constructor() {
@@ -6,15 +12,12 @@ class FamilyTreeApp {
         this.init();
     }
 
-    async init() {
-        await this.loadPersons();
-        await this.loadTree();
-        this.setupEventListeners();
-    }
-
     async apiCall(endpoint, options = {}) {
         try {
-            const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+            const url = `${API_BASE_URL}${endpoint}`;
+            console.log('Making API call to:', url);
+
+            const response = await fetch(url, {
                 headers: {
                     'Content-Type': 'application/json',
                     ...options.headers
@@ -23,7 +26,8 @@ class FamilyTreeApp {
             });
 
             if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
+                const errorText = await response.text();
+                throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
             }
 
             return await response.json();
@@ -34,6 +38,7 @@ class FamilyTreeApp {
         }
     }
 
+    // Остальные методы остаются без изменений...
     async loadPersons() {
         try {
             this.persons = await this.apiCall('/persons/');
@@ -129,7 +134,6 @@ class FamilyTreeApp {
             this.showSuccess('Родственник успешно добавлен!');
             event.target.reset();
 
-            // Обновляем данные
             await this.loadPersons();
             await this.loadTree();
 
@@ -151,7 +155,6 @@ class FamilyTreeApp {
     }
 
     showMessage(message, type) {
-        // Удаляем существующие сообщения
         const existingMessages = document.querySelectorAll('.message');
         existingMessages.forEach(msg => msg.remove());
 
@@ -159,11 +162,9 @@ class FamilyTreeApp {
         messageDiv.className = `message ${type}`;
         messageDiv.textContent = message;
 
-        // Вставляем перед формой
         const form = document.getElementById('personForm');
         form.parentNode.insertBefore(messageDiv, form);
 
-        // Автоматически удаляем через 5 секунд
         setTimeout(() => {
             messageDiv.remove();
         }, 5000);
@@ -173,13 +174,12 @@ class FamilyTreeApp {
         const container = document.getElementById('treeContainer');
         container.innerHTML = `
             <div class="error">
-                Не удалось загрузить дерево. Проверьте, запущен ли бэкенд на порту 8000.
+                Не удалось загрузить дерево. Проверьте, запущен ли бэкенд.
             </div>
         `;
     }
 }
 
-// Инициализация приложения когда DOM загружен
 document.addEventListener('DOMContentLoaded', () => {
     new FamilyTreeApp();
 });
