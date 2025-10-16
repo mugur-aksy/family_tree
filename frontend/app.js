@@ -83,17 +83,17 @@ class FamilyTreeApp {
         }
     }
 
-    updateParentSelect() {
-        const select = document.getElementById('parentId');
-        select.innerHTML = '<option value="">-- Выберите родителя --</option>';
+        updateParentSelect() {
+            const select = document.getElementById('parentId');
+            select.innerHTML = '<option value="">-- Выберите родителя --</option>';
 
-        this.persons.forEach(person => {
-            const option = document.createElement('option');
-            option.value = person.id;
-            option.textContent = `${person.first_name} ${person.last_name} (ID: ${person.id})`;
-            select.appendChild(option);
-        });
-    }
+            this.persons.forEach(person => {
+                const option = document.createElement('option');
+                option.value = person.id;
+                option.textContent = `${person.full_name} (ID: ${person.id})`;
+                select.appendChild(option);
+            });
+        }
 
     renderTree(treeData) {
         const container = document.getElementById('treeContainer');
@@ -112,24 +112,24 @@ class FamilyTreeApp {
     }
 
     renderTreeNode(person, level = 0) {
-        const childrenHTML = person.children && person.children.length > 0
-            ? `<div class="children-container">${person.children.map(child => this.renderTreeNode(child, level + 1)).join('')}</div>`
-            : '';
+    const childrenHTML = person.children && person.children.length > 0
+        ? `<div class="children-container">${person.children.map(child => this.renderTreeNode(child, level + 1)).join('')}</div>`
+        : '';
 
-        const birthDate = person.birth_date ?
-            new Date(person.birth_date + 'T00:00:00').toLocaleDateString('ru-RU') : '';
+    const birthDate = person.birth_date ?
+        new Date(person.birth_date + 'T00:00:00').toLocaleDateString('ru-RU') : '';
 
-        return `
-            <div class="tree-node level-${level}">
-                <div class="person-card">
-                    <div class="person-name">${this.escapeHtml(person.first_name)} ${this.escapeHtml(person.last_name)}</div>
-                    ${person.birth_date ? `<div class="person-birth">🎂 ${birthDate}</div>` : ''}
-                    <div class="person-id">ID: ${person.id}</div>
-                </div>
-                ${childrenHTML}
+    return `
+        <div class="tree-node level-${level}">
+            <div class="person-card">
+                <div class="person-name">${this.escapeHtml(person.full_name)}</div>
+                ${person.birth_date ? `<div class="person-birth">🎂 ${birthDate}</div>` : ''}
+                <div class="person-id">ID: ${person.id}</div>
             </div>
-        `;
-    }
+            ${childrenHTML}
+        </div>
+    `;
+}
 
     escapeHtml(text) {
         const div = document.createElement('div');

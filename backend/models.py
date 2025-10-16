@@ -21,6 +21,9 @@ class PersonDB(Base):
     children = relationship("PersonDB", back_populates="parent")
     parent = relationship("PersonDB", back_populates="children", remote_side=[id])
 
+    def get_full_name(self):
+        return f"{self.first_name} {self.last_name}"
+
 
 # Pydantic Models
 class PersonBase(BaseModel):
@@ -36,6 +39,7 @@ class PersonCreate(PersonBase):
 class Person(PersonBase):
     id: int
     parent_id: Optional[int] = None
+    full_name: str  # Добавляем поле full_name
 
     class Config:
         from_attributes = True
@@ -43,3 +47,15 @@ class Person(PersonBase):
 
 class PersonWithChildren(Person):
     children: List['PersonWithChildren'] = []
+
+
+# Функция для преобразования DB модели в Pydantic модель
+def person_from_db(person_db: PersonDB) -> Person:
+    return Person(
+        id=person_db.id,
+        first_name=person_db.first_name,
+        last_name=person_db.last_name,
+        birth_date=person_db.birth_date,
+        parent_id=person_db.parent_id,
+        full_name=person_db.get_full_name()  # Используем метод get_full_name
+    )
