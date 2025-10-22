@@ -20,7 +20,7 @@ else
 fi
 
 # Перезапускаем nginx
-sudo cp ../family_tree/family-tree /etc/nginx/sites-available/
+sudo cp /home/ansible/family_tree/family-tree /etc/nginx/sites-available/
 sudo ln -s /etc/nginx/sites-available/family-tree /etc/nginx/sites-enabled/
 sudo rm /etc/nginx/sites-enabled/default
 #sudo chown -R ansible:ansible /home/ansible/family_tree
