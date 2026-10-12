@@ -4,7 +4,7 @@ server {
 
     # Статические файлы фронтенда
     location / {
-        root /home/ansible/family_tree/frontend;
+        root /home/mengi/family_tree/frontend;
         index index.html;
         try_files $uri $uri/ /index.html;
 
