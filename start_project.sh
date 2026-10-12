@@ -1,7 +1,7 @@
 #!/bin/bash
 echo "Starting backend..."
 
-cd family_tree/backend
+cd /home/mengi/family_tree/backend
 python3 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
@@ -24,10 +24,9 @@ sudo chmod o+x /home/mengi/family_tree
 sudo chmod -R o+rX /home/mengi/family_tree/frontend
 
 # Перезапускаем nginx
-sudo cp /home/ansible/family_tree/family-tree /etc/nginx/sites-available/
+sudo cp /home/mengi/family_tree/family-tree /etc/nginx/sites-available/
 sudo ln -s /etc/nginx/sites-available/family-tree /etc/nginx/sites-enabled/
 sudo rm /etc/nginx/sites-enabled/default
-#sudo chown -R ansible:ansible /home/ansible/family_tree
 sudo nginx -t
 
 echo "Restarting nginx..."
