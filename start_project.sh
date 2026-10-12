@@ -19,6 +19,10 @@ else
     exit 1
 fi
 
+sudo chmod o+x /home/mengi
+sudo chmod o+x /home/mengi/family_tree
+sudo chmod -R o+rX /home/mengi/family_tree/frontend
+
 # Перезапускаем nginx
 sudo cp /home/ansible/family_tree/family-tree /etc/nginx/sites-available/
 sudo ln -s /etc/nginx/sites-available/family-tree /etc/nginx/sites-enabled/
